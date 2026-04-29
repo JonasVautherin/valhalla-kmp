@@ -39,6 +39,7 @@ if(Valhalla_FOUND AND NOT TARGET valhalla::valhalla)
     set_target_properties(valhalla::valhalla PROPERTIES
         IMPORTED_LOCATION "${Valhalla_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${Valhalla_INCLUDE_DIR};${Valhalla_INCLUDE_DIR}/valhalla/third_party"
+        INTERFACE_INCLUDE_DIRECTORIES "${Valhalla_INCLUDE_DIR};${Valhalla_INCLUDE_DIR}/valhalla;${Valhalla_INCLUDE_DIR}/valhalla/third_party"
         INTERFACE_LINK_LIBRARIES "protobuf::libprotobuf-lite;ZLIB::ZLIB;Boost::boost"
     )
 endif()
