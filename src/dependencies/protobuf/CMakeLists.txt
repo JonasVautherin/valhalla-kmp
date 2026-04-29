@@ -24,6 +24,12 @@ if(CMAKE_CROSSCOMPILING)
         )
 endif()
 
+if(CMAKE_EXE_LINKER_FLAGS)
+    list(APPEND CMAKE_ARGS
+        "-DCMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}"
+        )
+endif()
+
 if(IOS)
     list(APPEND CMAKE_ARGS
         "-DPLATFORM=${PLATFORM}"

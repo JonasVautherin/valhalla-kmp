@@ -29,6 +29,12 @@ list(APPEND CMAKE_ARGS
     "-DCMAKE_C_FLAGS=-ffunction-sections -fdata-sections"
     )
 
+if(HOST_PROTOC_EXECUTABLE)
+    list(APPEND CMAKE_ARGS
+        "-DProtobuf_PROTOC_EXECUTABLE=${HOST_PROTOC_EXECUTABLE}"
+        )
+endif()
+
 if(IOS)
     list(APPEND CMAKE_ARGS
         "-DPLATFORM=${PLATFORM}"

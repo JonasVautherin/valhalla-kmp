@@ -4,6 +4,10 @@ packages:
   - docker
   - gcompat
   - openjdk17
+  - cmake
+  - build-base
+  - perl
+  - linux-headers
 sources:
   - https://git.sr.ht/~jonasvautherin/valhalla-android
 environment:
@@ -14,11 +18,15 @@ tasks:
   - prepare-docker: |
       sudo addgroup build docker
       sudo service docker start
+  - build-host-dependencies: |
+      cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(pwd)/valhalla-android/host-install -DCMAKE_INSTALL_PREFIX=$(pwd)/valhalla-android/host-install -Bvalhalla-android/build/host-dependencies -Svalhalla-android/src/host-dependencies
+      cmake --build valhalla-android/build/host-dependencies
+      rm -rf valhalla-android/build/host-dependencies
   - install-docker-arm64: |
       docker run --rm dockcross/android-arm64 > ./dockcross-android-arm64
       chmod +x ./dockcross-android-arm64
   - build-dependencies-arm64: |
-      ./dockcross-android-arm64 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-arm64/install -DCMAKE_INSTALL_PREFIX=valhalla-android/build/dependencies/android-arm64/install -Bvalhalla-android/build/dependencies/android-arm64 -Svalhalla-android/src/dependencies
+      ./dockcross-android-arm64 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-arm64/install -DCMAKE_INSTALL_PREFIX=valhalla-android/build/dependencies/android-arm64/install -DHOST_PROTOC_EXECUTABLE=/work/valhalla-android/host-install/bin/protoc -Bvalhalla-android/build/dependencies/android-arm64 -Svalhalla-android/src/dependencies
       ./dockcross-android-arm64 cmake --build valhalla-android/build/dependencies/android-arm64
   - build-lib-arm64: |
       ./dockcross-android-arm64 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-arm64/install -Bvalhalla-android/build/main/android-arm64 -Svalhalla-android/src/main
@@ -33,7 +41,7 @@ tasks:
       docker run --rm dockcross/android-arm > ./dockcross-android-arm
       chmod +x ./dockcross-android-arm
   - build-dependencies-arm: |
-      ./dockcross-android-arm cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-arm/install -DCMAKE_INSTALL_PREFIX=valhalla-android/build/dependencies/android-arm/install -Bvalhalla-android/build/dependencies/android-arm -Svalhalla-android/src/dependencies
+      ./dockcross-android-arm cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-arm/install -DCMAKE_INSTALL_PREFIX=valhalla-android/build/dependencies/android-arm/install -DHOST_PROTOC_EXECUTABLE=/work/valhalla-android/host-install/bin/protoc -Bvalhalla-android/build/dependencies/android-arm -Svalhalla-android/src/dependencies
       ./dockcross-android-arm /bin/bash -c "sudo apt-get update && sudo apt-get install -y python3-packaging && cmake --build valhalla-android/build/dependencies/android-arm"
   - build-lib-arm: |
       ./dockcross-android-arm cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-arm/install -Bvalhalla-android/build/main/android-arm -Svalhalla-android/src/main
@@ -48,7 +56,7 @@ tasks:
       docker run --rm dockcross/android-x86 > ./dockcross-android-x86
       chmod +x ./dockcross-android-x86
   - build-dependencies-x86: |
-      ./dockcross-android-x86 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-x86/install -DCMAKE_INSTALL_PREFIX=valhalla-android/build/dependencies/android-x86/install -Bvalhalla-android/build/dependencies/android-x86 -Svalhalla-android/src/dependencies
+      ./dockcross-android-x86 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-x86/install -DCMAKE_INSTALL_PREFIX=valhalla-android/build/dependencies/android-x86/install -DHOST_PROTOC_EXECUTABLE=/work/valhalla-android/host-install/bin/protoc -Bvalhalla-android/build/dependencies/android-x86 -Svalhalla-android/src/dependencies
       ./dockcross-android-x86 /bin/bash -c "sudo apt-get update && sudo apt-get install -y python3-packaging && cmake --build valhalla-android/build/dependencies/android-x86"
   - build-lib-x86: |
       ./dockcross-android-x86 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-x86/install -Bvalhalla-android/build/main/android-x86 -Svalhalla-android/src/main
@@ -63,7 +71,7 @@ tasks:
       docker run --rm dockcross/android-x86_64 > ./dockcross-android-x86_64
       chmod +x ./dockcross-android-x86_64
   - build-dependencies-x86_64: |
-      ./dockcross-android-x86_64 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-x86_64/install -DCMAKE_INSTALL_PREFIX=valhalla-android/build/dependencies/android-x86_64/install -Bvalhalla-android/build/dependencies/android-x86_64 -Svalhalla-android/src/dependencies
+      ./dockcross-android-x86_64 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-x86_64/install -DCMAKE_INSTALL_PREFIX=valhalla-android/build/dependencies/android-x86_64/install -DHOST_PROTOC_EXECUTABLE=/work/valhalla-android/host-install/bin/protoc -Bvalhalla-android/build/dependencies/android-x86_64 -Svalhalla-android/src/dependencies
       ./dockcross-android-x86_64 /bin/bash -c "sudo apt-get update && sudo apt-get install -y python3-packaging && cmake --build valhalla-android/build/dependencies/android-x86_64"
   - build-lib-x86_64: |
       ./dockcross-android-x86_64 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-x86_64/install -Bvalhalla-android/build/main/android-x86_64 -Svalhalla-android/src/main
