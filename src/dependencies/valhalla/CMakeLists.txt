@@ -24,6 +24,7 @@ list(APPEND CMAKE_ARGS
     "-DENABLE_GDAL=OFF"
     "-DCMAKE_CXX_FLAGS=-ffunction-sections -fdata-sections"
     "-DCMAKE_C_FLAGS=-ffunction-sections -fdata-sections"
+    "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
     )
 
 if(HOST_PROTOC_EXECUTABLE)
@@ -51,7 +52,7 @@ ExternalProject_add(
     GIT_TAG ${VALHALLA_VERSION}
     GIT_SUBMODULES_RECURSE ON
     PREFIX valhalla
-    PATCH_COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/patch_valhalla.sh <SOURCE_DIR>
+    PATCH_COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=<SOURCE_DIR> -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_valhalla.cmake
     CMAKE_ARGS "${CMAKE_ARGS}"
     DEPENDS protobuf boost lz4
     )

@@ -19,7 +19,7 @@ tasks:
       sudo addgroup build docker
       sudo service docker start
   - build-host-dependencies: |
-      cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(pwd)/valhalla-android/host-install -DCMAKE_INSTALL_PREFIX=$(pwd)/valhalla-android/host-install -Bvalhalla-android/build/host-dependencies -Svalhalla-android/src/host-dependencies
+      cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(pwd)/valhalla-android/host-install -DCMAKE_INSTALL_PREFIX=$(pwd)/valhalla-android/host-install -DCMAKE_EXE_LINKER_FLAGS="-static" -Bvalhalla-android/build/host-dependencies -Svalhalla-android/src/host-dependencies
       cmake --build valhalla-android/build/host-dependencies
       rm -rf valhalla-android/build/host-dependencies
   - install-docker-arm64: |
