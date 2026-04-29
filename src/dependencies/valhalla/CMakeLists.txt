@@ -14,16 +14,13 @@ list(APPEND CMAKE_ARGS
     "-DENABLE_DATA_TOOLS=OFF"
     "-DENABLE_HTTP=OFF"
     "-DENABLE_PYTHON_BINDINGS=OFF"
-    "-DENABLE_SERVICE=OFF"
     "-DENABLE_SERVICES=OFF"
     "-DENABLE_THREAD_SAFE_TILE_REF_COUNT=OFF"
-    "-DENABLE_BENCHMARKS=OFF"
     "-DENABLE_TESTS=OFF"
     "-DBUILD_SHARED_LIBS=OFF"
     "-DENABLE_STATIC_LIBRARY_MODULES=ON"
     "-DENABLE_SINGLE_FILES_WERROR=OFF"
     "-DENABLE_ADDRESS_SANITIZER=OFF"
-    "-DPREFER_SYSTEM_DEPS=OFF"
     "-DENABLE_GDAL=OFF"
     "-DCMAKE_CXX_FLAGS=-ffunction-sections -fdata-sections"
     "-DCMAKE_C_FLAGS=-ffunction-sections -fdata-sections"
@@ -50,8 +47,11 @@ endforeach()
 
 ExternalProject_add(
     valhalla
-    URL https://github.com/valhalla/valhalla/archive/refs/tags/${VALHALLA_VERSION}.tar.gz
+    GIT_REPOSITORY https://github.com/valhalla/valhalla.git
+    GIT_TAG ${VALHALLA_VERSION}
+    GIT_SUBMODULES_RECURSE ON
     PREFIX valhalla
+    PATCH_COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/patch_valhalla.sh <SOURCE_DIR>
     CMAKE_ARGS "${CMAKE_ARGS}"
     DEPENDS protobuf boost lz4
     )
