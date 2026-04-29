@@ -1,0 +1,26 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 2f8acdfc9..4911695b0 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -224,6 +224,21 @@ install(TARGETS valhalla
+   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shared NAMELINK_SKIP
+   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT development)
+ 
++if(ENABLE_STATIC_LIBRARY_MODULES)
++  install(TARGETS
++      valhalla-midgard
++      valhalla-proto
++      valhalla-baldr
++      valhalla-sif
++      valhalla-meili
++      valhalla-thor
++      valhalla-skadi
++      valhalla-loki
++      valhalla-odin
++      valhalla-tyr
++      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT development)
++endif()
++
+ if(BUILD_SHARED_LIBS)
+   install(FILES ${VALHALLA_SOURCE_DIR}/COPYING ${VALHALLA_SOURCE_DIR}/CHANGELOG.md
+     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/doc/libvalhalla0"
