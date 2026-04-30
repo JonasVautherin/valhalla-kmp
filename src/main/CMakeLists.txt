@@ -11,14 +11,11 @@ find_package(Valhalla REQUIRED)
 add_library(valhalla_jni SHARED valhalla_jni.cpp)
 
 target_compile_options(valhalla_jni PRIVATE
-    -ffunction-sections
-    -fdata-sections
     -fvisibility=hidden
 )
 
 target_link_options(valhalla_jni PRIVATE
-    -Wl,--gc-sections
-    -Wl,--strip-all
+    -Wl,--exclude-libs,ALL
     -Wl,-z,max-page-size=16384
     -Wl,-z,common-page-size=16384
 )
