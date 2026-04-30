@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10.2)
 
 project(external-protobuf)
 include(ExternalProject)
@@ -45,7 +45,7 @@ endforeach()
 
 ExternalProject_add(
     protobuf
-    URL https://github.com/protocolbuffers/protobuf/archive/refs/tags/v31.1.tar.gz
+    URL https://github.com/protocolbuffers/protobuf/archive/refs/tags/v34.1.tar.gz
     PREFIX protobuf
     CMAKE_ARGS "${CMAKE_ARGS}"
     DEPENDS absl cares openssl zlib

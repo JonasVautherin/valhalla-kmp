@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10.2)
 
 project(external-absl)
 include(ExternalProject)
@@ -9,7 +9,7 @@ list(APPEND CMAKE_ARGS
     "-DCMAKE_TOOLCHAIN_FILE:PATH=${CMAKE_TOOLCHAIN_FILE}"
     "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
     "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
-    "-DCMAKE_CXX_STANDARD=17"
+    "-DCMAKE_CXX_STANDARD=20"
     )
 
 if(IOS)
@@ -27,7 +27,7 @@ endforeach()
 
 ExternalProject_add(
     absl
-    URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20250512.1.tar.gz
+    URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20260107.1.tar.gz
     PREFIX absl
     CMAKE_ARGS "${CMAKE_ARGS}"
     )
