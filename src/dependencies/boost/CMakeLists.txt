@@ -52,7 +52,6 @@ if(ANDROID)
         boost
 	GIT_REPOSITORY https://github.com/boostorg/boost
 	GIT_TAG boost-1.85.0
-	#URL https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.tar.gz
         PREFIX boost
         CONFIGURE_COMMAND <SOURCE_DIR>/bootstrap.sh --prefix=${CMAKE_INSTALL_PREFIX}
 	BUILD_COMMAND <SOURCE_DIR>/b2 --user-config=${PROJECT_SOURCE_DIR}/dockcross-config.jam --without-python ${B2_ARCH} ${B2_ADDRESS_MODEL} ${B2_BINARY_FORMAT} ${B2_ABI} ${B2_TARGET_OS} ${B2_BUILD_TYPE} ${B2_LINK_TYPE} install
@@ -62,7 +61,8 @@ if(ANDROID)
 elseif(MSVC)
     ExternalProject_add(
         boost
-        URL https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.tar.gz
+	GIT_REPOSITORY https://github.com/boostorg/boost
+	GIT_TAG boost-1.85.0
         PREFIX boost
         CONFIGURE_COMMAND <SOURCE_DIR>/bootstrap.bat
         BUILD_COMMAND <SOURCE_DIR>/b2 ${B2_BUILD_TYPE} ${B2_LINK_TYPE} --without-python --prefix=${CMAKE_INSTALL_PREFIX} install
@@ -72,7 +72,8 @@ elseif(MSVC)
 else()
     ExternalProject_add(
         boost
-        URL https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.tar.gz
+	GIT_REPOSITORY https://github.com/boostorg/boost
+	GIT_TAG boost-1.85.0
         PREFIX boost
         CONFIGURE_COMMAND <SOURCE_DIR>/bootstrap.sh --prefix=${CMAKE_INSTALL_PREFIX}
         BUILD_COMMAND <SOURCE_DIR>/b2 ${B2_BUILD_TYPE} ${B2_LINK_TYPE} --without-python install

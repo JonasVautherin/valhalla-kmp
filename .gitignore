@@ -1,3 +1,5 @@
+install/
+build.log
 build
 .cxx
 .gradle
@@ -16,3 +18,5 @@ dockcross-*
 **/dependencies/install/
 build-test
 .claude
+
+valhalla_tiles.tar

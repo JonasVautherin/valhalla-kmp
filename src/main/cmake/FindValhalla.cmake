@@ -86,12 +86,22 @@ if(Valhalla_FOUND AND NOT TARGET valhalla::valhalla)
         list(APPEND _whole_libs "${_lz4_loc}")
     endif()
 
-    # Intermediate INTERFACE target that forces whole-archive on absl
+    # Intermediate INTERFACE target that pulls in absl + lz4 static libs.
+    # On GNU/Linux/Android we need --whole-archive to avoid the linker
+    # discarding symbols that are only referenced at runtime.
+    # On Apple we don't need this: iOS builds merge all .a files with
+    # libtool -static which keeps every object file.
     add_library(valhalla_deps_whole INTERFACE)
-    set_target_properties(valhalla_deps_whole PROPERTIES
-        INTERFACE_LINK_LIBRARIES
-            "-Wl,--whole-archive;${_whole_libs};-Wl,--no-whole-archive"
-    )
+    if(APPLE)
+        set_target_properties(valhalla_deps_whole PROPERTIES
+            INTERFACE_LINK_LIBRARIES "${_whole_libs}"
+        )
+    else()
+        set_target_properties(valhalla_deps_whole PROPERTIES
+            INTERFACE_LINK_LIBRARIES
+                "-Wl,--whole-archive;${_whole_libs};-Wl,--no-whole-archive"
+        )
+    endif()
 
     # Collect component libs
     set(Valhalla_COMPONENT_LIBS "")
