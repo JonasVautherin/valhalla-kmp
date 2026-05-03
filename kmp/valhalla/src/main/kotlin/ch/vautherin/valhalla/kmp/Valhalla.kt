@@ -1,4 +1,4 @@
-package ch.vautherin.valhalla_android
+package ch.vautherin.valhalla.kmp
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex

@@ -23,7 +23,7 @@ try {
 }
 
 android {
-    namespace = "ch.vautherin.valhalla_android"
+    namespace = "ch.vautherin.valhalla.kmp"
     compileSdk = 36
 
     defaultConfig {

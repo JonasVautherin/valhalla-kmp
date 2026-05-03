@@ -32,8 +32,8 @@ tasks:
       ./dockcross-android-arm64 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-arm64/install -Bvalhalla-android/build/main/android-arm64 -Svalhalla-android/src/main
       ./dockcross-android-arm64 cmake --build valhalla-android/build/main/android-arm64
   - copy-lib-arm64: |
-      mkdir -p valhalla-android/android/valhalla/src/main/prebuiltLibs/arm64-v8a
-      cp valhalla-android/build/main/android-arm64/libvalhalla_jni.so valhalla-android/android/valhalla/src/main/prebuiltLibs/arm64-v8a
+      mkdir -p valhalla-android/kmp/valhalla/src/main/prebuiltLibs/arm64-v8a
+      cp valhalla-android/build/main/android-arm64/libvalhalla_jni.so valhalla-android/kmp/valhalla/src/main/prebuiltLibs/arm64-v8a
   - cleanup-arm64: |
       docker system prune -a -f
       rm -rf valhalla-android/build
@@ -47,8 +47,8 @@ tasks:
       ./dockcross-android-arm cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-arm/install -Bvalhalla-android/build/main/android-arm -Svalhalla-android/src/main
       ./dockcross-android-arm cmake --build valhalla-android/build/main/android-arm
   - copy-lib-arm: |
-      mkdir -p valhalla-android/android/valhalla/src/main/prebuiltLibs/armeabi-v7a
-      cp valhalla-android/build/main/android-arm/libvalhalla_jni.so valhalla-android/android/valhalla/src/main/prebuiltLibs/armeabi-v7a
+      mkdir -p valhalla-android/kmp/valhalla/src/main/prebuiltLibs/armeabi-v7a
+      cp valhalla-android/build/main/android-arm/libvalhalla_jni.so valhalla-android/kmp/valhalla/src/main/prebuiltLibs/armeabi-v7a
   - cleanup-arm: |
       docker system prune -a -f
       rm -rf valhalla-android/build
@@ -62,8 +62,8 @@ tasks:
       ./dockcross-android-x86 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-x86/install -Bvalhalla-android/build/main/android-x86 -Svalhalla-android/src/main
       ./dockcross-android-x86 cmake --build valhalla-android/build/main/android-x86
   - copy-lib-x86: |
-      mkdir -p valhalla-android/android/valhalla/src/main/prebuiltLibs/x86
-      cp valhalla-android/build/main/android-x86/libvalhalla_jni.so valhalla-android/android/valhalla/src/main/prebuiltLibs/x86
+      mkdir -p valhalla-android/kmp/valhalla/src/main/prebuiltLibs/x86
+      cp valhalla-android/build/main/android-x86/libvalhalla_jni.so valhalla-android/kmp/valhalla/src/main/prebuiltLibs/x86
   - cleanup-x86: |
       docker system prune -a -f
       rm -rf valhalla-android/build
@@ -77,8 +77,8 @@ tasks:
       ./dockcross-android-x86_64 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/work/valhalla-android/build/dependencies/android-x86_64/install -Bvalhalla-android/build/main/android-x86_64 -Svalhalla-android/src/main
       ./dockcross-android-x86_64 cmake --build valhalla-android/build/main/android-x86_64
   - copy-lib-x86_64: |
-      mkdir -p valhalla-android/android/valhalla/src/main/prebuiltLibs/x86_64
-      cp valhalla-android/build/main/android-x86_64/libvalhalla_jni.so valhalla-android/android/valhalla/src/main/prebuiltLibs/x86_64
+      mkdir -p valhalla-android/kmp/valhalla/src/main/prebuiltLibs/x86_64
+      cp valhalla-android/build/main/android-x86_64/libvalhalla_jni.so valhalla-android/kmp/valhalla/src/main/prebuiltLibs/x86_64
   - cleanup-x86_64: |
       docker system prune -a -f
       rm -rf valhalla-android/build
@@ -90,10 +90,10 @@ tasks:
       mkdir -p /tmp/android-sdk
       echo y | /tmp/android-tools/cmdline-tools/bin/sdkmanager --sdk_root=/tmp/android-sdk "platforms;android-35"
   - build-valhalla-aar: |
-      cd ./valhalla-android/android/valhalla
+      cd ./valhalla-android/kmp/valhalla
       ./gradlew assembleDebug
   - run-android-tests: |
-      cd ./valhalla-android/android/valhalla
+      cd ./valhalla-android/kmp/valhalla
       ./gradlew test
   - collect-artifacts: |
-      tar -czf /tmp/valhalla-artifacts.tar.gz valhalla-android/android/valhalla/build/outputs/aar/*
+      tar -czf /tmp/valhalla-artifacts.tar.gz valhalla-android/kmp/valhalla/build/outputs/aar/*

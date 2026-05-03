@@ -1,4 +1,4 @@
-package ch.vautherin.valhalla_android
+package ch.vautherin.valhalla.kmp
 
 /**
  * Thin 1-to-1 Kotlin wrapper around the native Valhalla JNI functions.

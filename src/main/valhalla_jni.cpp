@@ -23,7 +23,7 @@ static jstring to_jstring_and_free(JNIEnv* env, char* str) {
 extern "C" {
 
 JNIEXPORT void JNICALL
-Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeInit(
+Java_ch_vautherin_valhalla_kmp_ValhallaEngine_nativeInit(
         JNIEnv* env, jobject /* thiz */, jstring jConfigPath) {
     const char* path = env->GetStringUTFChars(jConfigPath, nullptr);
     char* error = nullptr;
@@ -38,7 +38,7 @@ Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeInit(
 }
 
 JNIEXPORT void JNICALL
-Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeDestroy(
+Java_ch_vautherin_valhalla_kmp_ValhallaEngine_nativeDestroy(
         JNIEnv* /* env */, jobject /* thiz */) {
     valhalla_destroy(g_actor);
     g_actor = nullptr;
@@ -46,7 +46,7 @@ Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeDestroy(
 }
 
 JNIEXPORT jstring JNICALL
-Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeRoute(
+Java_ch_vautherin_valhalla_kmp_ValhallaEngine_nativeRoute(
         JNIEnv* env, jobject /* thiz */, jstring jRequest) {
     const char* req = env->GetStringUTFChars(jRequest, nullptr);
     char* result = valhalla_route(g_actor, req);
@@ -55,7 +55,7 @@ Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeRoute(
 }
 
 JNIEXPORT jstring JNICALL
-Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeTraceRoute(
+Java_ch_vautherin_valhalla_kmp_ValhallaEngine_nativeTraceRoute(
         JNIEnv* env, jobject /* thiz */, jstring jRequest) {
     const char* req = env->GetStringUTFChars(jRequest, nullptr);
     char* result = valhalla_trace_route(g_actor, req);
@@ -64,7 +64,7 @@ Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeTraceRoute(
 }
 
 JNIEXPORT jstring JNICALL
-Java_ch_vautherin_valhalla_1android_ValhallaEngine_nativeTraceAttributes(
+Java_ch_vautherin_valhalla_kmp_ValhallaEngine_nativeTraceAttributes(
         JNIEnv* env, jobject /* thiz */, jstring jRequest) {
     const char* req = env->GetStringUTFChars(jRequest, nullptr);
     char* result = valhalla_trace_attributes(g_actor, req);
