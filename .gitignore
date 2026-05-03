@@ -22,3 +22,4 @@ build-test
 valhalla_tiles.tar
 
 **/*.a
+.kotlin

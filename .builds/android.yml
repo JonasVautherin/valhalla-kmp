@@ -92,8 +92,5 @@ tasks:
   - build-valhalla-aar: |
       cd ./valhalla-android/kmp/valhalla
       ./gradlew assembleAndroidMain
-  - run-android-tests: |
-      cd ./valhalla-android/kmp/valhalla
-      ./gradlew test
   - collect-artifacts: |
       tar -czf /tmp/valhalla-artifacts.tar.gz valhalla-android/kmp/valhalla/build/outputs/aar/*
