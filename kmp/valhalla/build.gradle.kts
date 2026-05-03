@@ -3,7 +3,8 @@ import java.io.IOException
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
 }
 
 group = "ch.vautherin"
@@ -22,41 +23,35 @@ try {
         property("ossrhPassword")
 }
 
-android {
-    namespace = "ch.vautherin.valhalla.kmp"
-    compileSdk = 36
-
-    defaultConfig {
+kotlin {
+    androidLibrary {
+        namespace = "ch.vautherin.valhalla.kmp"
+        compileSdk = 36
         minSdk = 25
 
-        ndk {
-            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64"))
+        withHostTestBuilder {
+        }
+
+        withDeviceTestBuilder {
+            sourceSetTreeName = "test"
+        }
+    }
+
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach { target ->
+        target.compilations.getByName("main") {
+            // cinterop will be configured here in the next step
         }
     }
 
     sourceSets {
-        getByName("main") {
-            jniLibs.srcDirs("src/main/prebuiltLibs")
+        commonMain.dependencies {
+            implementation(libs.kotlinx.coroutines.core)
+        }
+        androidMain.dependencies {
+            implementation(libs.kotlinx.coroutines.android)
         }
     }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
-        }
-    }
-}
-
-dependencies {
-    implementation(libs.kotlinx.coroutines.android)
-    testImplementation(libs.junit)
 }
