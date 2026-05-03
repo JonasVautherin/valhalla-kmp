@@ -110,51 +110,16 @@ for target in device sim-arm64; do
   cmake --build "${TARGET_BUILD_DIR}/main" -j"$(sysctl -n hw.ncpu)"
   cmake --install "${TARGET_BUILD_DIR}/main"
 
-  # ── Step 2c: Merge all static libs into one and package as a framework ─────
-  log "[${target}] Creating ${FRAMEWORK_NAME}.framework..."
+  # ── Step 2c: Merge all static libs into one .a ─────────────────────────────
+  log "[${target}] Merging static libraries..."
 
-  FRAMEWORK_DIR="${TARGET_INSTALL_DIR}/${FRAMEWORK_NAME}.framework"
-  if [[ -d "${FRAMEWORK_DIR}" ]]; then
-    die "Framework already exists: ${FRAMEWORK_DIR} — please remove it before re-running."
-  fi
-  mkdir -p "${FRAMEWORK_DIR}/Headers"
-
-  # Merge all .a files (dependencies + main) into a single static library
-  libtool -static -o "${FRAMEWORK_DIR}/${FRAMEWORK_NAME}" \
+  libtool -static -o "${TARGET_INSTALL_DIR}/lib/${FRAMEWORK_NAME}.a" \
     "${DEPS_INSTALL_DIR}"/lib/*.a \
     "${TARGET_INSTALL_DIR}"/lib/*.a
 
-  # Copy the public C header
-  cp "${TARGET_INSTALL_DIR}/include/valhalla_capi.h" "${FRAMEWORK_DIR}/Headers/"
-
-  # Write a minimal Info.plist
-  cat > "${FRAMEWORK_DIR}/Info.plist" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleName</key>
-  <string>${FRAMEWORK_NAME}</string>
-  <key>CFBundleIdentifier</key>
-  <string>ch.vautherin.${FRAMEWORK_NAME}</string>
-  <key>CFBundleVersion</key>
-  <string>1.0</string>
-  <key>CFBundlePackageType</key>
-  <string>FMWK</string>
-</dict>
-</plist>
-PLIST
-
-  log "[${target}] Done: ${FRAMEWORK_DIR}"
+  log "[${target}] Done: ${TARGET_INSTALL_DIR}/lib/${FRAMEWORK_NAME}.a"
 done
 
-# ── Step 3: Build the xcframework ────────────────────────────────────────────
-log "Creating xcframework..."
-
-xcodebuild -create-xcframework \
-  -framework "${INSTALL_DIR}/device/${FRAMEWORK_NAME}.framework" \
-  -framework "${INSTALL_DIR}/sim-arm64/${FRAMEWORK_NAME}.framework" \
-  -output "${XCFRAMEWORK_DIR}"
-
-log "Done! xcframework at: ${XCFRAMEWORK_DIR}"
+log "Done! Static libraries at:"
+log "  ${INSTALL_DIR}/device/lib/${FRAMEWORK_NAME}.a"
+log "  ${INSTALL_DIR}/sim-arm64/lib/${FRAMEWORK_NAME}.a"
