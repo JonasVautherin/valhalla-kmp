@@ -37,12 +37,18 @@ kotlin {
         }
     }
 
+    val nativeInterop = projectDir.resolve("src/nativeInterop/cinterop")
+
     listOf(
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { target ->
+        iosArm64() to "ios-device",
+        iosSimulatorArm64() to "ios-simulator-arm64",
+    ).forEach { (target, dir) ->
         target.compilations.getByName("main") {
-            // cinterop will be configured here in the next step
+            cinterops.create("ValhallaCAPI") {
+                defFile(nativeInterop.resolve("ValhallaCAPI.def"))
+                includeDirs(nativeInterop.resolve("$dir/include"))
+                extraOpts("-libraryPath", nativeInterop.resolve("$dir/lib").absolutePath)
+            }
         }
     }
 
