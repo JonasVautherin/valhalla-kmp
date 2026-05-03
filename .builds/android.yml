@@ -91,7 +91,7 @@ tasks:
       echo y | /tmp/android-tools/cmdline-tools/bin/sdkmanager --sdk_root=/tmp/android-sdk "platforms;android-35"
   - build-valhalla-aar: |
       cd ./valhalla-android/kmp/valhalla
-      ./gradlew assemble
+      ./gradlew assembleAndroidMain
   - run-android-tests: |
       cd ./valhalla-android/kmp/valhalla
       ./gradlew test

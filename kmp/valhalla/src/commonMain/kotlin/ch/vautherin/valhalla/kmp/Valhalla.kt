@@ -1,37 +1,9 @@
 package ch.vautherin.valhalla.kmp
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.io.Closeable
-import java.io.File
 
-/**
- * Idiomatic Kotlin API for the Valhalla routing engine.
- *
- * Wraps [ValhallaEngine] with proper lifecycle management, coroutine support,
- * and structured error handling. The underlying C++ actor is a singleton
- * protected by a native mutex, so only one [Valhalla] instance should exist
- * at a time.
- *
- * Usage:
- * ```
- * val valhalla = Valhalla.create(configPath)
- * try {
- *     val response = valhalla.route(requestJson)
- * } finally {
- *     valhalla.close()
- * }
- * ```
- *
- * Or with [use]:
- * ```
- * Valhalla.create(configPath).use { valhalla ->
- *     val response = valhalla.route(requestJson)
- * }
- * ```
- */
 /** Valhalla costing models. */
 enum class Costing(val value: String) {
     AUTO("auto"),
@@ -44,7 +16,23 @@ enum class Costing(val value: String) {
     TAXI("taxi"),
 }
 
-class Valhalla private constructor(private val engine: ValhallaEngine) : Closeable {
+/**
+ * Idiomatic Kotlin API for the Valhalla routing engine.
+ *
+ * Wraps [ValhallaEngine] with proper lifecycle management, coroutine support,
+ * and structured error handling.
+ *
+ * Usage:
+ * ```
+ * val valhalla = Valhalla.create(configPath)
+ * try {
+ *     val response = valhalla.route(requestJson)
+ * } finally {
+ *     valhalla.close()
+ * }
+ * ```
+ */
+class Valhalla private constructor(private val engine: ValhallaEngine) : AutoCloseable {
 
     private val mutex = Mutex()
     private var closed = false
@@ -59,20 +47,10 @@ class Valhalla private constructor(private val engine: ValhallaEngine) : Closeab
          *
          * @param configPath absolute path to a Valhalla config JSON file.
          */
-        suspend fun create(configPath: String): Valhalla = withContext(Dispatchers.IO) {
+        suspend fun create(configPath: String): Valhalla = withContext(ioDispatcher) {
             val engine = ValhallaEngine()
             engine.nativeInit(configPath)
             Valhalla(engine)
-        }
-
-        /**
-         * Convenience: write the default config for [filesDir] and initialise.
-         */
-        suspend fun create(filesDir: File): Valhalla {
-            val configPath = withContext(Dispatchers.IO) {
-                ValhallaConfig.writeConfig(filesDir)
-            }
-            return create(configPath)
         }
     }
 
@@ -152,7 +130,7 @@ class Valhalla private constructor(private val engine: ValhallaEngine) : Closeab
     private suspend fun call(block: () -> String): String {
         mutex.withLock {
             check(!closed) { "Valhalla instance has been closed" }
-            return withContext(Dispatchers.IO) {
+            return withContext(ioDispatcher) {
                 val result = block()
                 ValhallaException.throwIfError(result)
                 result

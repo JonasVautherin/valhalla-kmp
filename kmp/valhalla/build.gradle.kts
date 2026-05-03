@@ -1,6 +1,7 @@
 import java.io.FileInputStream
 import java.io.IOException
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -24,7 +25,11 @@ try {
 }
 
 kotlin {
-    androidLibrary {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
+    android {
         namespace = "ch.vautherin.valhalla.kmp"
         compileSdk = 36
         minSdk = 25
@@ -38,6 +43,7 @@ kotlin {
     }
 
     val nativeInterop = projectDir.resolve("src/nativeInterop/cinterop")
+    val xcf = XCFramework("Valhalla")
 
     listOf(
         iosArm64() to "ios-device",
@@ -49,6 +55,10 @@ kotlin {
                 includeDirs(nativeInterop.resolve("$dir/include"))
                 extraOpts("-libraryPath", nativeInterop.resolve("$dir/lib").absolutePath)
             }
+        }
+        target.binaries.framework {
+            baseName = "Valhalla"
+            xcf.add(this)
         }
     }
 
