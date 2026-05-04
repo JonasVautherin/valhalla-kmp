@@ -17,6 +17,7 @@ if(ANDROID)
     target_compile_options(valhalla_jni PRIVATE -fvisibility=hidden)
 
     target_link_options(valhalla_jni PRIVATE
+        -static-libstdc++
         -Wl,--exclude-libs,ALL
         -Wl,-z,max-page-size=16384
         -Wl,-z,common-page-size=16384
