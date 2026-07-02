@@ -65,6 +65,18 @@ class Valhalla private constructor(private val engine: ValhallaEngine) : AutoClo
     suspend fun route(requestJson: String): String = call { engine.nativeRoute(requestJson) }
 
     /**
+     * Compute a route that reorders the intermediate locations (first and last held fixed) to
+     * minimise total cost — Valhalla's `optimized_route` action.
+     *
+     * @param requestJson raw Valhalla JSON request string.
+     * @return raw Valhalla JSON response string; each `trip.locations` entry carries an
+     *   `original_index` giving its position in the request.
+     * @throws ValhallaException if the engine returns an error.
+     * @throws IllegalStateException if [close] has already been called.
+     */
+    suspend fun optimizedRoute(requestJson: String): String = call { engine.nativeOptimizedRoute(requestJson) }
+
+    /**
      * Compute a route between two points.
      *
      * @param fromLat origin latitude.

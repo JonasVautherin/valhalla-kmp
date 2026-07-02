@@ -36,6 +36,11 @@ internal actual class ValhallaEngine actual constructor() {
         return callAndFree(valhalla_route(actor, requestJson))
     }
 
+    /** Route that reorders intermediate locations to minimise cost. Returns raw Valhalla JSON. */
+    actual fun nativeOptimizedRoute(requestJson: String): String {
+        return callAndFree(valhalla_optimized_route(actor, requestJson))
+    }
+
     /** Map-match a GPS trace to the road network and return a route. */
     actual fun nativeTraceRoute(requestJson: String): String {
         return callAndFree(valhalla_trace_route(actor, requestJson))

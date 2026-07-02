@@ -55,6 +55,15 @@ Java_ch_vautherin_valhalla_kmp_ValhallaEngine_nativeRoute(
 }
 
 JNIEXPORT jstring JNICALL
+Java_ch_vautherin_valhalla_kmp_ValhallaEngine_nativeOptimizedRoute(
+        JNIEnv* env, jobject /* thiz */, jstring jRequest) {
+    const char* req = env->GetStringUTFChars(jRequest, nullptr);
+    char* result = valhalla_optimized_route(g_actor, req);
+    env->ReleaseStringUTFChars(jRequest, req);
+    return to_jstring_and_free(env, result);
+}
+
+JNIEXPORT jstring JNICALL
 Java_ch_vautherin_valhalla_kmp_ValhallaEngine_nativeTraceRoute(
         JNIEnv* env, jobject /* thiz */, jstring jRequest) {
     const char* req = env->GetStringUTFChars(jRequest, nullptr);

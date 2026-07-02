@@ -21,6 +21,9 @@ internal actual class ValhallaEngine actual constructor() {
     /** Turn-by-turn route. Returns raw Valhalla JSON. */
     actual external fun nativeRoute(requestJson: String): String
 
+    /** Route that reorders intermediate locations to minimise cost. Returns raw Valhalla JSON. */
+    actual external fun nativeOptimizedRoute(requestJson: String): String
+
     /** Map-match a GPS trace to the road network and return a route. */
     actual external fun nativeTraceRoute(requestJson: String): String
 

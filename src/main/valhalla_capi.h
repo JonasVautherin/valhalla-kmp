@@ -25,6 +25,8 @@ void valhalla_destroy(ValhallActor* actor);
 // The caller must free the returned string with valhalla_free_string.
 // If actor is NULL, returns a JSON error.
 char* valhalla_route(ValhallActor* actor, const char* request_json);
+// Reorders the intermediate locations (first and last held fixed) to minimise cost.
+char* valhalla_optimized_route(ValhallActor* actor, const char* request_json);
 char* valhalla_trace_route(ValhallActor* actor, const char* request_json);
 char* valhalla_trace_attributes(ValhallActor* actor, const char* request_json);
 

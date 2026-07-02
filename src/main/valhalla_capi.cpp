@@ -77,6 +77,12 @@ char* valhalla_route(ValhallActor* actor, const char* request_json) {
     });
 }
 
+char* valhalla_optimized_route(ValhallActor* actor, const char* request_json) {
+    return call_actor(actor, [&](valhalla::tyr::actor_t& a) {
+        return a.optimized_route(std::string(request_json));
+    });
+}
+
 char* valhalla_trace_route(ValhallActor* actor, const char* request_json) {
     return call_actor(actor, [&](valhalla::tyr::actor_t& a) {
         return a.trace_route(std::string(request_json));
