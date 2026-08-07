@@ -67,7 +67,7 @@ jobs:
         uses: jlumbroso/free-disk-space@v1.3.1
         continue-on-error: true
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: host-install
           path: host-install
@@ -124,7 +124,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: jniLibs-*
           path: /tmp/jniLibs
