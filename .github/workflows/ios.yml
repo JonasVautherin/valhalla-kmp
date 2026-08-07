@@ -26,7 +26,7 @@ jobs:
 
       # build_ios.sh skips whatever is already installed, so restoring the install trees is enough to make it
       # rebuild only src/main.
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         with:
           path: |
             src/build/ios/host/install
