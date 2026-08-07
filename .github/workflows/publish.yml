@@ -1,13 +1,13 @@
-name: Release
+name: Publish
 
 on:
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch:
-    inputs:
-      version:
-        description: Version to publish
-        required: true
+
+concurrency:
+  group: publish-${{ github.ref }}
 
 env:
   DOCKCROSS_TAG: "20250818-0a27819"
@@ -124,14 +124,18 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
+      # A tag publishes a release at that version; anything else publishes the -SNAPSHOT the build file
+      # falls back to, which goes to Central's snapshot repository.
       - name: Resolve version
         run: |
-          version="${{ inputs.version }}"
-          [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
-          case "$version" in
-            *-SNAPSHOT|"") echo "Refusing to release '$version'" >&2; exit 1 ;;
-          esac
-          echo "VERSION=$version" >> $GITHUB_ENV
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            version="${GITHUB_REF_NAME#v}"
+            case "$version" in
+              *-SNAPSHOT|"") echo "Tag $GITHUB_REF_NAME is not a release version" >&2; exit 1 ;;
+            esac
+            echo "VERSION=$version" >> $GITHUB_ENV
+            echo "GRADLE_VERSION=-PVERSION=$version" >> $GITHUB_ENV
+          fi
 
       - uses: actions/download-artifact@v8
         with:
@@ -164,6 +168,7 @@ jobs:
         run: python3 tools/third_party.py --check
 
       - name: Stamp the SBOM with the release version
+        if: github.ref_type == 'tag'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 tools/third_party.py --version "$VERSION"
@@ -175,4 +180,4 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-        run: ./gradlew publishToMavenCentral -PVERSION="$VERSION" --no-configuration-cache
+        run: ./gradlew publishToMavenCentral $GRADLE_VERSION --no-configuration-cache
