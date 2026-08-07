@@ -22,7 +22,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       # build_ios.sh skips whatever is already installed, so restoring the install trees is enough to make it
       # rebuild only src/main.
