@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         id: cache
         with:
           path: host-install
@@ -81,7 +81,7 @@ jobs:
           docker run --rm dockcross/${{ matrix.abi }}:${{ env.DOCKCROSS_TAG }} > ./dockcross
           chmod +x ./dockcross
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         id: cache
         with:
           path: build/dependencies/${{ matrix.abi }}/install
@@ -145,7 +145,7 @@ jobs:
             cp /tmp/jniLibs/jniLibs-$abi/libvalhalla_jni.so kmp/valhalla/src/androidMain/jniLibs/$abi/
           done
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         with:
           path: |
             src/build/ios/host/install
