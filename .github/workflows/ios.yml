@@ -1,0 +1,50 @@
+name: iOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  ios:
+    name: Build and link
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # build_ios.sh skips whatever is already installed, so restoring the install trees is enough to make it
+      # rebuild only src/main.
+      - uses: actions/cache@v5
+        with:
+          path: |
+            src/build/ios/host/install
+            src/build/ios/device/dependencies/install
+            src/build/ios/sim-arm64/dependencies/install
+          key: ios-deps-${{ hashFiles('src/dependencies/**', 'src/host-dependencies/**', 'src/cmake/**') }}-1
+
+      - name: Build native libraries
+        run: src/build_ios.sh
+
+      - name: Install into the KMP project
+        run: src/install_ios.sh
+
+      - name: Check third-party SBOM
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/third_party.py --check
+
+      - name: Link frameworks
+        working-directory: kmp/valhalla
+        run: ./gradlew linkReleaseFrameworkIosArm64 linkReleaseFrameworkIosSimulatorArm64

@@ -1,28 +1,13 @@
-import java.io.FileInputStream
-import java.io.IOException
-import java.util.Properties
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.maven.publish)
 }
 
 group = "ch.vautherin"
-version = "0.1.0"
-
-// Load file "keystore.properties" where we keep our keys
-val keystorePropertiesFile = rootProject.file("keystore.properties")
-val keystoreProperties = Properties()
-
-try {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-} catch (ignored: IOException) {
-    if (project.hasProperty("ossrhUsername")) keystoreProperties["ossrhUsername"] =
-        property("ossrhUsername")
-    if (project.hasProperty("ossrhPassword")) keystoreProperties["ossrhPassword"] =
-        property("ossrhPassword")
-}
+version = project.findProperty("VERSION")?.toString() ?: "0.1.0-SNAPSHOT"
 
 kotlin {
     compilerOptions {
@@ -68,6 +53,59 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.kotlinx.coroutines.android)
+        }
+    }
+}
+
+val repositoryRoot = layout.projectDirectory.dir("../..")
+val thirdPartySbom = repositoryRoot.file("dist/third-party.cdx.json").asFile
+val thirdPartyNotices = repositoryRoot.file("dist/THIRD-PARTY-NOTICES.txt").asFile
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    coordinates(group.toString(), "valhalla", version.toString())
+
+    pom {
+        name = "Valhalla KMP"
+        description = "Offline routing for Kotlin Multiplatform, wrapping Valhalla built for Android and iOS."
+        url = "https://github.com/JonasVautherin/valhalla-kmp"
+        // The wrapper only; the statically linked native licences are in the attribution artifacts below.
+        licenses {
+            license {
+                name = "Mozilla Public License 2.0"
+                url = "https://www.mozilla.org/en-US/MPL/2.0/"
+                distribution = "repo"
+            }
+        }
+        developers {
+            developer {
+                id = "JonasVautherin"
+                name = "Jonas Vautherin"
+                url = "https://github.com/JonasVautherin"
+            }
+        }
+        scm {
+            url = "https://github.com/JonasVautherin/valhalla-kmp"
+            connection = "scm:git:https://github.com/JonasVautherin/valhalla-kmp.git"
+            developerConnection = "scm:git:ssh://git@github.com/JonasVautherin/valhalla-kmp.git"
+        }
+    }
+}
+
+publishing {
+    publications.withType<MavenPublication>().configureEach {
+        // Root publication only: attaching to each target would publish the same 40 KB four more times.
+        if (name != "kotlinMultiplatform") {
+            return@configureEach
+        }
+        artifact(thirdPartySbom) {
+            classifier = "cyclonedx"
+            extension = "json"
+        }
+        artifact(thirdPartyNotices) {
+            classifier = "third-party-notices"
+            extension = "txt"
         }
     }
 }

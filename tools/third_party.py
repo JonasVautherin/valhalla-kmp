@@ -204,7 +204,7 @@ def version_of(tag: str) -> str:
 def fetch(url: str) -> dict:
     request = urllib.request.Request(url, headers={
         "Accept": "application/vnd.github+json",
-        "User-Agent": "valhalla-android-third-party",
+        "User-Agent": "valhalla-kmp-third-party",
     })
     token = os.environ.get("GITHUB_TOKEN")
     if token:
@@ -215,7 +215,7 @@ def fetch(url: str) -> dict:
 
 def fetch_raw(repo: str, tag: str, path: str) -> tuple[str, str]:
     url = f"https://raw.githubusercontent.com/{repo}/{tag}/{path}"
-    request = urllib.request.Request(url, headers={"User-Agent": "valhalla-android-third-party"})
+    request = urllib.request.Request(url, headers={"User-Agent": "valhalla-kmp-third-party"})
     with urllib.request.urlopen(request, timeout=30) as response:
         return response.read().decode("utf-8", "replace"), url
 
@@ -281,7 +281,7 @@ def sbom(components: list[dict], name: str, version: str) -> dict:
         "metadata": {
             "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "tools": {"components": [
-                {"type": "application", "name": "third_party.py", "author": "valhalla-android"},
+                {"type": "application", "name": "third_party.py", "author": "valhalla-kmp"},
             ]},
             "component": {
                 "type": "library",
@@ -352,9 +352,14 @@ def notices(components: list[dict], name: str) -> str:
 
 
 def stable(document: dict) -> str:
+    """Comparable form: what describes the dependencies, minus what only identifies this release of them."""
     copy = json.loads(json.dumps(document))
     copy["metadata"].pop("timestamp", None)
-    return json.dumps(copy, indent=2, sort_keys=True)
+    component = copy["metadata"].get("component", {})
+    root = component.get("bom-ref")
+    component.pop("version", None)
+    text = json.dumps(copy, indent=2, sort_keys=True)
+    return text.replace(root, "ROOT") if root else text
 
 
 def main() -> int:

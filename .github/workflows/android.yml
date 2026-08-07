@@ -1,0 +1,151 @@
+name: Android
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  DOCKCROSS_TAG: "20250818-0a27819"
+
+jobs:
+  host-dependencies:
+    name: Host dependencies (protoc)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/cache@v5
+        id: cache
+        with:
+          path: host-install
+          key: host-install-${{ hashFiles('src/host-dependencies/**') }}-1
+
+      - name: Build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_PREFIX_PATH=$(pwd)/host-install \
+                -DCMAKE_INSTALL_PREFIX=$(pwd)/host-install \
+                -DCMAKE_EXE_LINKER_FLAGS="-static" \
+                -Bbuild/host-dependencies -Ssrc/host-dependencies
+          cmake --build build/host-dependencies -j$(nproc)
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: host-install
+          path: host-install/
+          retention-days: 1
+
+  native:
+    name: ${{ matrix.abi }}
+    needs: host-dependencies
+    runs-on: ubuntu-24.04
+    env:
+      OCI_EXE: docker
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - abi: android-arm64
+            jni_dir: arm64-v8a
+          - abi: android-arm
+            jni_dir: armeabi-v7a
+          - abi: android-x86
+            jni_dir: x86
+          - abi: android-x86_64
+            jni_dir: x86_64
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        continue-on-error: true
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: host-install
+          path: host-install
+
+      - name: Restore protoc permissions
+        # upload-artifact does not preserve the executable bit.
+        run: chmod +x host-install/bin/*
+
+      - name: Setup dockcross
+        run: |
+          docker run --rm dockcross/${{ matrix.abi }}:${{ env.DOCKCROSS_TAG }} > ./dockcross
+          chmod +x ./dockcross
+
+      - uses: actions/cache@v5
+        id: cache
+        with:
+          path: build/dependencies/${{ matrix.abi }}/install
+          key: deps-${{ matrix.abi }}-${{ hashFiles('src/dependencies/**') }}-1
+
+      - name: Build dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          ./dockcross cmake -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH=/work/build/dependencies/${{ matrix.abi }}/install \
+            -DCMAKE_INSTALL_PREFIX=build/dependencies/${{ matrix.abi }}/install \
+            -DHOST_PROTOC_EXECUTABLE=/work/host-install/bin/protoc \
+            -Bbuild/dependencies/${{ matrix.abi }} -Ssrc/dependencies
+          ./dockcross /bin/bash -c "sudo apt-get update && sudo apt-get install -y python3-packaging && cmake --build build/dependencies/${{ matrix.abi }} -j\$(nproc)"
+
+      - name: Build libvalhalla_jni.so
+        run: |
+          ./dockcross cmake -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH=/work/build/dependencies/${{ matrix.abi }}/install \
+            -Bbuild/main/${{ matrix.abi }} -Ssrc/main
+          ./dockcross cmake --build build/main/${{ matrix.abi }} -j$(nproc)
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: jniLibs-${{ matrix.jni_dir }}
+          path: build/main/${{ matrix.abi }}/libvalhalla_jni.so
+          retention-days: 1
+
+  aar:
+    name: Assemble AAR
+    needs: native
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: jniLibs-*
+          path: /tmp/jniLibs
+
+      - name: Place native libraries
+        run: |
+          for abi in arm64-v8a armeabi-v7a x86 x86_64; do
+            mkdir -p kmp/valhalla/src/androidMain/jniLibs/$abi
+            cp /tmp/jniLibs/jniLibs-$abi/libvalhalla_jni.so kmp/valhalla/src/androidMain/jniLibs/$abi/
+          done
+
+      - name: Check third-party SBOM
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/third_party.py --check
+
+      - name: Assemble
+        working-directory: kmp/valhalla
+        run: ./gradlew assembleAndroidMain
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: valhalla-aar
+          path: kmp/valhalla/build/outputs/aar/*
