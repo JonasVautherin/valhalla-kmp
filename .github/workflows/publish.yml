@@ -7,14 +7,51 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: publish-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   DOCKCROSS_TAG: "20250818-0a27819"
 
 jobs:
+  version:
+    name: Resolve version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      gradle_arg: ${{ steps.resolve.outputs.gradle_arg }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # A v* tag publishes that release; a merge to main publishes the next patch as a snapshot, so forgetting
+      # to bump anything still yields a usable version. With no tags yet, the build file's fallback seeds it.
+      - id: resolve
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            version="${GITHUB_REF_NAME#v}"
+            case "$version" in
+              *-SNAPSHOT|"") echo "Tag $GITHUB_REF_NAME is not a release version" >&2; exit 1 ;;
+            esac
+          else
+            latest="$(git tag --list 'v*' --sort=-v:refname | head -n 1)"
+            if [ -n "$latest" ]; then
+              IFS=. read -r major minor patch <<< "${latest#v}"
+              version="${major}.${minor}.$((patch + 1))-SNAPSHOT"
+            fi
+          fi
+          if [ -n "$version" ]; then
+            echo "Publishing $version"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+            echo "gradle_arg=-PVERSION=$version" >> "$GITHUB_OUTPUT"
+          else
+            echo "No release tag yet; publishing the fallback version from build.gradle.kts"
+          fi
+
   host-dependencies:
     name: Host dependencies (protoc)
+    needs: version
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -45,7 +82,7 @@ jobs:
   # and carried over.
   android-native:
     name: ${{ matrix.abi }}
-    needs: host-dependencies
+    needs: [version, host-dependencies]
     runs-on: ubuntu-24.04
     env:
       OCI_EXE: docker
@@ -112,7 +149,7 @@ jobs:
 
   publish:
     name: Publish to Maven Central
-    needs: android-native
+    needs: [version, android-native]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -171,7 +208,7 @@ jobs:
         if: github.ref_type == 'tag'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 tools/third_party.py --version "$VERSION"
+        run: python3 tools/third_party.py --version "${{ needs.version.outputs.version }}"
 
       - name: Publish
         working-directory: kmp/valhalla
@@ -180,4 +217,4 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-        run: ./gradlew publishToMavenCentral $GRADLE_VERSION --no-configuration-cache
+        run: ./gradlew publishAndReleaseToMavenCentral ${{ needs.version.outputs.gradle_arg }} --no-configuration-cache

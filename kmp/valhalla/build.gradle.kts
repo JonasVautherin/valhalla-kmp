@@ -7,7 +7,10 @@ plugins {
 }
 
 group = "ch.vautherin"
-version = project.findProperty("VERSION")?.toString() ?: "0.1.0-SNAPSHOT"
+
+// Pushes to main publish this; a release tag overrides it with -PVERSION=x.y.z. Bump it after a release.
+val fallbackVersion = "0.1.0-SNAPSHOT"
+version = project.findProperty("VERSION")?.toString() ?: fallbackVersion
 
 kotlin {
     compilerOptions {
