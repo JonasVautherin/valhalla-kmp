@@ -22,8 +22,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      # build_ios.sh skips whatever is already installed, so restoring the install trees is enough to make it
-      # rebuild only src/main.
+      # Optional: build_ios.sh builds whatever is not already installed, so a hit only saves the dependency build.
       - uses: actions/cache@v6
         with:
           path: |

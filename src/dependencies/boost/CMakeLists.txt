@@ -70,12 +70,14 @@ elseif(MSVC)
         INSTALL_COMMAND ""
         )
 else()
+    # bootstrap.sh compiles b2 for the host, but SDKROOT is exported for the iOS cross-build and the iOS SDKs
+    # carry no ar.h, so it has to be dropped here.
     ExternalProject_add(
         boost
 	GIT_REPOSITORY https://github.com/boostorg/boost
 	GIT_TAG boost-1.85.0
         PREFIX boost
-        CONFIGURE_COMMAND <SOURCE_DIR>/bootstrap.sh --prefix=${CMAKE_INSTALL_PREFIX}
+        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env --unset=SDKROOT <SOURCE_DIR>/bootstrap.sh --prefix=${CMAKE_INSTALL_PREFIX}
         BUILD_COMMAND <SOURCE_DIR>/b2 ${B2_BUILD_TYPE} ${B2_LINK_TYPE} --without-python install
         BUILD_IN_SOURCE TRUE
         INSTALL_COMMAND ""
